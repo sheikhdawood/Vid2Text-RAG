@@ -1,0 +1,10 @@
+streamlit
+yt-dlp
+faster-whisper
+torch
+langchain
+langchain-community
+chromadb
+groq
+sentence_transformers
+faiss_cpu

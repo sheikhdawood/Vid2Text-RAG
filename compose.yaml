@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  vid2text:
+    build: .
+    container_name: vid2text-rag
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: unless-stopped

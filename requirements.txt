@@ -8,3 +8,5 @@ chromadb
 groq
 sentence_transformers
 faiss_cpu
+numpy
+python-dotenv

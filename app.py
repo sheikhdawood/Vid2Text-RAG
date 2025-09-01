@@ -121,6 +121,7 @@ youtube_url = st.text_input("Enter YouTube Video URL:")
 if st.button("Process Video"):
     with st.spinner("Downloading audio..."):
         audio_path = download_audio(youtube_url)
+        st.session_state["audio_path"] = audio_path 
 
     with st.spinner("Transcribing audio..."):
         transcript = transcribe_audio(audio_path)
@@ -140,7 +141,15 @@ if st.button("Process Video"):
     # Download button always available
     if "transcript" in st.session_state:
         st.download_button("📄 Download Transcript", st.session_state["transcript"], file_name="transcript.txt")
-
+    if "audio_path" in st.session_state:
+        with open(st.session_state["audio_path"], "rb") as audio_file:
+            st.download_button(
+                "🎵 Download Audio",
+                audio_file,
+                file_name="audio.mp3",
+                mime="audio/mpeg"
+            )
+    
     st.success("✅ Processing complete! Transcript saved to transcript.txt")
 
 question = st.text_input("Ask a question about the video:")

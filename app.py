@@ -23,7 +23,7 @@ if not groq_api_key:
 groq_client = Groq(api_key=groq_api_key)
 
 # Load embedding model
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
 
 # Load whisper model (medium for better quality)
 whisper_model = WhisperModel("medium", device="cpu", compute_type="int8")
@@ -33,7 +33,7 @@ def download_audio(youtube_url):
     tmpdir = tempfile.mkdtemp()
     output_path = os.path.join(tmpdir, "audio.%(ext)s")
     ydl_opts = {
-        "format": "bestaudio/best",
+        "format": "bestaudio",
         "outtmpl": output_path,
         "postprocessors": [{
             "key": "FFmpegExtractAudio",

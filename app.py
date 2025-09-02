@@ -28,7 +28,6 @@ embedder = SentenceTransformer("all-MiniLM-L6-v2")
 # Load whisper model (medium for better quality)
 whisper_model = WhisperModel("medium", device="cpu", compute_type="int8")
 
-# ===== FUNCTIONS =====
 def download_audio(youtube_url):
     """Download audio from YouTube and return path"""
     tmpdir = tempfile.mkdtemp()
@@ -100,7 +99,7 @@ Question:
 Answer:
 """
     response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",  # You can use llama3-8b-8192, gemma-7b-it, etc.
+        model="openai/gpt-oss-120b",  # You can use llama3-8b-8192, gemma-7b-it, etc.
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
         max_tokens=512
@@ -108,7 +107,6 @@ Answer:
     return response.choices[0].message.content.strip()
 
 
-# ===== STREAMLIT UI =====
 st.title("Vid2Text RAG")
 
 if "chunks" not in st.session_state:
@@ -168,5 +166,5 @@ if st.button("Get Answer"):
             answer = ask_groq(context_text, question)
 
         st.write("**Answer:**", answer)
-        with st.expander("🔍 Context used"):
+        with st.expander("Context used"):
             st.write(context_text)

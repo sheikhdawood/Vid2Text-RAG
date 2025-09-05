@@ -7,14 +7,11 @@ from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 from groq import Groq
-
 from dotenv import load_dotenv
-import os
+from better_profanity import profanity
+profanity.load_censor_words()
 
-# Load environment variables from .env file
 load_dotenv()
-
-# Get API key from env
 groq_api_key = os.getenv("GROQ_API_KEY")
 
 if not groq_api_key:
@@ -50,13 +47,11 @@ def download_audio(youtube_url):
         raise FileNotFoundError(f"Audio file not found at {audio_path}")
     return audio_path
 
-
 def transcribe_audio(audio_path):
     """Transcribe audio with faster-whisper"""
     segments, _ = whisper_model.transcribe(audio_path)
     transcript = " ".join([seg.text for seg in segments])
-    return transcript
-
+    return profanity.censor(transcript)
 
 def chunk_text(text, chunk_size=500, overlap=50):
     """Split text into overlapping chunks"""
@@ -67,7 +62,6 @@ def chunk_text(text, chunk_size=500, overlap=50):
         chunks.append(chunk)
     return chunks
 
-
 def build_faiss_index(chunks):
     """Create FAISS vector store from chunks"""
     embeddings = embedder.encode(chunks, convert_to_numpy=True)
@@ -76,13 +70,11 @@ def build_faiss_index(chunks):
     index.add(embeddings)
     return index, embeddings
 
-
 def retrieve_chunks(query, chunks, index):
     """Retrieve top chunks for a query"""
     q_emb = embedder.encode([query], convert_to_numpy=True)
     distances, indices = index.search(q_emb, k=3)
     return [chunks[i] for i in indices[0]]
-
 
 def ask_groq(context, question):
     """Send question + context to Groq"""
@@ -99,13 +91,13 @@ Question:
 Answer:
 """
     response = groq_client.chat.completions.create(
-        model="openai/gpt-oss-120b",  # You can use llama3-8b-8192, gemma-7b-it, etc.
+        model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
         max_tokens=512
     )
-    return response.choices[0].message.content.strip()
-
+    raw_answer = response.choices[0].message.content.strip()
+    return profanity.censor(raw_answer)
 
 st.title("Vid2Text RAG")
 
@@ -122,7 +114,7 @@ if st.button("Process Video"):
         st.session_state["audio_path"] = audio_path 
 
     with st.spinner("Transcribing audio..."):
-        transcript = transcribe_audio(audio_path)
+        transcript = transcribe_audio(audio_path)  # ✅ Cleaned transcript
 
     with st.spinner("Chunking & indexing..."):
         chunks = chunk_text(transcript)
@@ -130,25 +122,17 @@ if st.button("Process Video"):
 
     st.session_state.chunks = chunks
     st.session_state.faiss_index = index
-
-    with open("transcript.txt", "w") as f:
-        f.write(transcript)
-    # After transcription
     st.session_state["transcript"] = transcript
-
-    # Download button always available
-    if "transcript" in st.session_state:
-        st.download_button("📄 Download Transcript", st.session_state["transcript"], file_name="transcript.txt")
-    if "audio_path" in st.session_state:
-        with open(st.session_state["audio_path"], "rb") as audio_file:
-            st.download_button(
-                "🎵 Download Audio",
-                audio_file,
-                file_name="audio.mp3",
-                mime="audio/mpeg"
-            )
+    st.download_button("📄 Download Transcript", st.session_state["transcript"], file_name="transcript.txt")
+    with open(st.session_state["audio_path"], "rb") as audio_file:
+        st.download_button(
+            "🎵 Download Audio",
+            audio_file,
+            file_name="audio.mp3",
+            mime="audio/mpeg"
+        )
     
-    st.success("✅ Processing complete! Transcript saved to transcript.txt")
+    st.success("✅ Processing complete! Transcript cleaned & saved.")
 
 question = st.text_input("Ask a question about the video:")
 

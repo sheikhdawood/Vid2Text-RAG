@@ -114,7 +114,7 @@ Answer:
     return profanity.censor(raw_answer)
 
 # ------------------- Streamlit App ------------------- #
-st.title("🎬 Vid2Text RAG")
+st.title("🎬 Voxify")
 
 if "chunks" not in st.session_state:
     st.session_state.chunks = None

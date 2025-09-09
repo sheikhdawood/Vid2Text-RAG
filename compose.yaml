@@ -3,7 +3,7 @@ version: "3.9"
 services:
   vid2text:
     build: .
-    container_name: vid2text-rag
+    container_name: voxify
     ports:
       - "8501:8501"
     env_file:

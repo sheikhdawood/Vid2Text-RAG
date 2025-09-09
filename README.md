@@ -51,5 +51,5 @@
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/vid2text-rag.git
-cd vid2text-rag
+git clone https://github.com/sheikhdawood/voxify.git
+cd voxify
